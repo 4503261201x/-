@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24小时校园生活 - 青春校园</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e6f2ff 0%, #c2e0ff 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .campus-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="%23e6f2ff" width="200" height="200"/><path fill="%23c2e0ff" d="M0,0 Q100,40 200,0 L200,200 Q100,160 0,200 Z"/><circle fill="%23ffd6cc" cx="40" cy="60" r="10"/><circle fill="%23ffd6cc" cx="160" cy="120" r="14"/><circle fill="%23ffd6cc" cx="80" cy="160" r="12"/><path fill="%23a1c4fd" d="M50,120 Q70,100 90,120 T130,120" opacity="0.6"/></svg>');
+            background-size: cover;
+            z-index: 0;
+            opacity: 0.7;
+        }
+        
+        .header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .time-slider {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .time-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ddd;
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .time-dot.active {
+            background: #ff6b6b;
+            transform: scale(1.3);
+        }
+        
+        .time-dot::after {
+            content: attr(data-time);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .content-area {
+            position: relative;
+            height: calc(100% - 150px);
+            overflow: hidden;
+        }
+        
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-align: center;
+        }
+        
+        .page-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 700px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            text-align: center;
+            border: 2px dashed transparent;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px;
+            font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .morning-bg { background: linear-gradient(135deg, #ff9a9e, #fad0c4); }
+        .class-bg { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); }
+        .lunch-bg { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+        .activity-bg { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+        .evening-bg { background: linear-gradient(135deg, #d4fc79, #96e6a1); }
+        .night-bg { background: linear-gradient(135deg, #a3bded, #6991c7); }
+        
+        .card h3 {
+            margin-bottom: 10px;
+            color: #444;
+        }
+        
+        .card p {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .interactive-element {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .interactive-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .popup-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            animation: popupIn 0.4s ease;
+        }
+        
+        @keyframes popupIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .food-option {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .food-option i {
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            width: 30px;
+        }
+        
+        .close-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .navigation {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 1;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .page-title {
+                font-size: 1.7rem;
+            }
+            
+            .card {
+                min-width: 100%;
+            }
+            
+            .time-dot {
+                margin: 0 10px;
+            }
+            
+            .time-dot::after {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="campus-bg"></div>
+        
+        <div class="header">
+            <h1>24小时校园生活</h1>
+            <p>探索大学校园里充实而多彩的一天</p>
+        </div>
+        
+        <div class="time-slider">
+            <div class="time-dot active" data-time="清晨" data-page="0"></div>
+            <div class="time-dot" data-time="上午" data-page="1"></div>
+            <div class="time-dot" data-time="午间" data-page="2"></div>
+            <div class="time-dot" data-time="下午" data-page="3"></div>
+            <div class="time-dot" data-time="傍晚" data-page="4"></div>
+            <div class="time-dot" data-time="夜晚" data-page="5"></div>
+        </div>
+        
+        <div class="content-area">
+            <!-- 第1页：清晨 -->
+            <div class="page active" id="page-0">
+                <h2 class="page-title">清晨 · 6:00-8:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon morning-bg">🌅</div>
+                        <h3>晨光微熹</h3>
+                        <p>校园渐渐苏醒，晨跑的同学、早读的声音、食堂飘来的香气，一天的美好从此刻开始。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon morning-bg">📖</div>
+                        <h3>早读时光</h3>
+                        <p>图书馆前已有同学排队等候，清晨的露水在草坪上闪闪发光，校园广播播放着轻快的音乐。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon morning-bg">🍞</div>
+                        <h3>营养早餐</h3>
+                        <p>食堂提供丰富的早餐选择，为一天的学习生活提供充足能量。</p>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <button class="interactive-btn" id="morning-tip">获取清晨学习建议</button>
+                </div>
+            </div>
+            
+            <!-- 第2页：上午课堂 -->
+            <div class="page" id="page-1">
+                <h2 class="page-title">上午 · 8:00-12:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon class-bg">📚</div>
+                        <h3>教室课堂</h3>
+                        <p>教室里的思维碰撞，教授们激情洋溢的讲解，同学们专注的眼神和认真的笔记。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon class-bg">🧪</div>
+                        <h3>实验探索</h3>
+                        <p>实验室里的探索与发现，小组讨论中的思想火花，知识在这里传递与创造。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon class-bg">💡</div>
+                        <h3>创新思维</h3>
+                        <p>课堂互动激发创新思维，小组项目培养团队协作能力。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第3页：午间时光 -->
+            <div class="page" id="page-2">
+                <h2 class="page-title">午间 · 12:00-14:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon lunch-bg">🍱</div>
+                        <h3>食堂美食</h3>
+                        <p>食堂里熙熙攘攘的人群，各式各样的美食香气四溢，同学们分享着上午的趣事。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon lunch-bg">😴</div>
+                        <h3>午间小憩</h3>
+                        <p>午后的校园安静而祥和，有人在树荫下小憩，有人继续在图书馆奋战。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon lunch-bg">🎵</div>
+                        <h3>休闲时光</h3>
+                        <p>校园广播播放轻松音乐，同学们在草坪上聊天、听音乐，享受午间休闲时光。</p>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <button class="interactive-btn" id="food-btn">查看今日食堂推荐</button>
+                </div>
+            </div>
+            
+            <!-- 第4页：下午活动 -->
+            <div class="page" id="page-3">
+                <h2 class="page-title">下午 · 14:00-18:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon activity-bg">⚽</div>
+                        <h3>体育运动</h3>
+                        <p>运动场上的汗水与激情，篮球、足球、羽毛球，处处是青春的身影。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon activity-bg">🎨</div>
+                        <h3>社团活动</h3>
+                        <p>社团活动的创意与活力，艺术、音乐、科技，各种兴趣小组丰富多彩。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon activity-bg">📝</div>
+                        <h3>自主学习</h3>
+                        <p>自习室里的安静专注，实验室里的严谨探索，知识的海洋永不停息。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第5页：傍晚 -->
+            <div class="page" id="page-4">
+                <h2 class="page-title">傍晚 · 18:00-20:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon evening-bg">🌇</div>
+                        <h3>日落美景</h3>
+                        <p>校园在夕阳的映照下格外美丽，同学们三三两两在校园里散步聊天。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon evening-bg">🍽️</div>
+                        <h3>晚餐时光</h3>
+                        <p>食堂再次热闹起来，晚餐后同学们在校园里散步，享受傍晚的宁静。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon evening-bg">🎬</div>
+                        <h3>文化活动</h3>
+                        <p>校园电影院、讲座、文艺表演，傍晚是校园文化活动的高峰时段。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第6页：夜晚 -->
+            <div class="page" id="page-5">
+                <h2 class="page-title">夜晚 · 20:00-24:00</h2>
+                <div class="page-content">
+                    <div class="card">
+                        <div class="card-icon night-bg">📚</div>
+                        <h3>晚自习</h3>
+                        <p>图书馆的灯光温暖而明亮，自习室里座无虚席，知识的海洋永不停息。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon night-bg">🏃‍♀️</div>
+                        <h3>夜间运动</h3>
+                        <p>校园夜跑的身影，体育馆里的晚间训练，健康生活从不停歇。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon night-bg">😴</div>
+                        <h3>休息准备</h3>
+                        <p>宿舍里的欢声笑语渐渐平息，一天在宁静中落下帷幕，但梦想仍在继续。</p>
+                    </div>
+                </div>
+                <div class="interactive-element">
+                    <button class="interactive-btn" id="night-tip">获取晚间学习建议</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn"><i class="fas fa-chevron-left"></i></button>
+            <button class="nav-btn" id="next-btn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+    
+    <!-- 弹出窗口 -->
+    <div class="popup" id="food-popup">
+        <div class="popup-content">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #ff6b6b;">今日食堂推荐</h2>
+            <div class="food-option">
+                <i class="fas fa-utensils"></i>
+                <span>红烧牛肉饭 - 主厨推荐，肉质鲜嫩</span>
+            </div>
+            <div class="food-option">
+                <i class="fas fa-leaf"></i>
+                <span>轻食沙拉 - 健康低卡，多种蔬菜搭配</span>
+            </div>
+            <div class="food-option">
+                <i class="fas fa-bowl-food"></i>
+                <span>重庆小面 - 麻辣鲜香，地道川味</span>
+            </div>
+            <div class="food-option">
+                <i class="fas fa-egg"></i>
+                <span>韩式拌饭 - 营养均衡，韩式风味</span>
+            </div>
+            <div class="food-option">
+                <i class="fas fa-pepper-hot"></i>
+                <span>日式咖喱 - 浓郁香醇，配菜丰富</span>
+            </div>
+            <button class="close-btn" id="close-food">关闭</button>
+        </div>
+    </div>
+    
+    <div class="popup" id="morning-tip-popup">
+        <div class="popup-content">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #4ecdc4;">清晨学习建议</h2>
+            <p style="margin-bottom: 15px;">1. 利用早晨记忆力最佳时段背诵重要内容</p>
+            <p style="margin-bottom: 15px;">2. 先复习前一天的知识，再学习新内容</p>
+            <p style="margin-bottom: 15px;">3. 制定当天学习计划，明确学习目标</p>
+            <p style="margin-bottom: 15px;">4. 选择安静环境，避免干扰</p>
+            <p style="margin-bottom: 15px;">5. 适当休息，每45分钟休息5-10分钟</p>
+            <button class="close-btn" id="close-morning">关闭</button>
+        </div>
+    </div>
+    
+    <div class="popup" id="night-tip-popup">
+        <div class="popup-content">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #a3bded;">晚间学习建议</h2>
+            <p style="margin-bottom: 15px;">1. 复习当天所学内容，巩固记忆</p>
+            <p style="margin-bottom: 15px;">2. 完成作业和练习，查漏补缺</p>
+            <p style="margin-bottom: 15px;">3. 预习第二天课程内容，提前了解重点</p>
+            <p style="margin-bottom: 15px;">4. 整理笔记，形成知识体系</p>
+            <p style="margin-bottom: 15px;">5. 合理安排时间，避免熬夜影响第二天状态</p>
+            <button class="close-btn" id="close-night">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pages = document.querySelectorAll('.page');
+            const timeDots = document.querySelectorAll('.time-dot');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const foodBtn = document.getElementById('food-btn');
+            const foodPopup = document.getElementById('food-popup');
+            const closeFood = document.getElementById('close-food');
+            const morningTipBtn = document.getElementById('morning-tip');
+            const morningTipPopup = document.getElementById('morning-tip-popup');
+            const closeMorning = document.getElementById('close-morning');
+            const nightTipBtn = document.getElementById('night-tip');
+            const nightTipPopup = document.getElementById('night-tip-popup');
+            const closeNight = document.getElementById('close-night');
+            
+            let currentPage = 0;
+            
+            // 更新页面显示
+            function updatePage() {
+                pages.forEach((page, index) => {
+                    if (index === currentPage) {
+                        page.classList.add('active');
+                    } else {
+                        page.classList.remove('active');
+                    }
+                });
+                
+                timeDots.forEach((dot, index) => {
+                    if (index === currentPage) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+                
+                // 更新按钮状态
+                prevBtn.disabled = currentPage === 0;
+                nextBtn.disabled = currentPage === pages.length - 1;
+            }
+            
+            // 下一页
+            function nextPage() {
+                if (currentPage < pages.length - 1) {
+                    currentPage++;
+                    updatePage();
+                }
+            }
+            
+            // 上一页
+            function prevPage() {
+                if (currentPage > 0) {
+                    currentPage--;
+                    updatePage();
+                }
+            }
+            
+            // 点击时间点跳转
+            timeDots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    currentPage = parseInt(this.getAttribute('data-page'));
+                    updatePage();
+                });
+            });
+            
+            // 添加事件监听
+            prevBtn.addEventListener('click', prevPage);
+            nextBtn.addEventListener('click', nextPage);
+            
+            // 食物按钮交互
+            foodBtn.addEventListener('click', function() {
+                foodPopup.style.display = 'flex';
+            });
+            
+            closeFood.addEventListener('click', function() {
+                foodPopup.style.display = 'none';
+            });
+            
+            // 清晨建议交互
+            morningTipBtn.addEventListener('click', function() {
+                morningTipPopup.style.display = 'flex';
+            });
+            
+            closeMorning.addEventListener('click', function() {
+                morningTipPopup.style.display = 'none';
+            });
+            
+            // 夜晚建议交互
+            nightTipBtn.addEventListener('click', function() {
+                nightTipPopup.style.display = 'flex';
+            });
+            
+            closeNight.addEventListener('click', function() {
+                nightTipPopup.style.display = 'none';
+            });
+            
+            // 点击弹出窗口外部关闭
+            window.addEventListener('click', function(event) {
+                if (event.target === foodPopup) {
+                    foodPopup.style.display = 'none';
+                }
+                if (event.target === morningTipPopup) {
+                    morningTipPopup.style.display = 'none';
+                }
+                if (event.target === nightTipPopup) {
+                    nightTipPopup.style.display = 'none';
+                }
+            });
+            
+            // 添加触摸滑动支持
+            let startX = 0;
+            let endX = 0;
+            
+            document.querySelector('.content-area').addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+            
+            document.querySelector('.content-area').addEventListener('touchend', (e) => {
+                endX = e.changedTouches[0].clientX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const diff = startX - endX;
+                if (Math.abs(diff) > 50) { // 最小滑动距离
+                    if (diff > 0) {
+                        nextPage();
+                    } else {
+                        prevPage();
+                    }
+                }
+            }
+            
+            // 初始化
+            updatePage();
+        });
+    </script>
+</body>
+</html>
